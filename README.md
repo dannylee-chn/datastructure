@@ -1,6 +1,6 @@
 # 数据结构与算法学习仓库
 
-#算法与数据结构基础
+## 算法与数据结构基础
 1. **排序基础**
     - [Mergesort.java](Mergesort.java)：归并排序
     - [Quicksort.c](Quicksort.c)：快速排序
