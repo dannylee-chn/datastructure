@@ -142,11 +142,25 @@ AVLTree* add(AVLTree* node,int e,AVL *tree) {
     if (abs(balanceFactor)>1)printf("unbalanced:%d",balanceFactor);
 
     //平衡维护
+    //LL
     if (balanceFactor>1&&getBalanceFactor(node->left)>=0) {//LL（左左）：左重，并且左孩子也是左重--右旋转
         return rightRotate(node);
     }
-
+    //RR
     if (balanceFactor<-1&&getBalanceFactor(node->right)<=0) {
+        return leftRotate(node);
+    }
+
+    //LR
+    if (balanceFactor>1&&getBalanceFactor(node->right)<0) {
+        node->left=leftRotate(node->left);
+        return rightRotate(node);
+
+    }
+
+    //RL
+    if (balanceFactor<-1&&getBalanceFactor(node->left)>0) {
+        node->right=rightRotate(node->right);
         return leftRotate(node);
     }
     return node;
