@@ -2,6 +2,7 @@
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
 #define MAX_STACK 100
 #define max(a,b) ((a)>(b)?(a):(b))
@@ -184,4 +185,39 @@ bool contains(AVLTree *node,int e) {
 
 bool bst_contains(int e,AVL *tree) {
     return contains(tree->root,e);
+}
+
+int main() {
+    AVL *tree = bst_create();
+
+    int arr[] = {37, 12, 42, 60, 5};
+    int n = sizeof(arr)/sizeof(arr[0]);
+    for(int i = 0; i < n; i++){
+        bst_add(tree, arr[i]);
+    }
+    printf("size = %d\n", bst_get_size(tree));
+    printf("contains 12? %s\n", bst_contains(12,tree) ? "yes" : "no");
+    printf("contains 99? %s\n", bst_contains(99,tree) ? "yes" : "no");
+    printf("isBST? %s\n", isBST(tree) ? "yes" : "no");
+    printf("isBalanced? %s\n", avl_isBalanced(tree) ? "yes" : "no");
+
+
+    AVL *t2 = bst_create();
+    int N = 10000;
+    clock_t start = clock();
+
+    for(int i = 0; i < N; i++){
+        bst_add(t2, i);
+    }
+    for(int i = 0; i < N; i++){
+        bst_contains(i, t2);
+    }
+
+    clock_t end = clock();
+    double time = (double)(end - start) / CLOCKS_PER_SEC;
+    printf("\n插入+查询 %d 个元素耗时：%.4f s\n", N, time);
+    printf("t2 size = %d\n", bst_get_size(t2));
+    printf("t2 isBalanced? %s\n", avl_isBalanced(t2) ? "yes" : "no");
+
+    return 0;
 }
