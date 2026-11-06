@@ -1,8 +1,8 @@
-
 #include <stdbool.h>
 #include<stdio.h>
 #include<string.h>
 #include<stdlib.h>
+#include <time.h>
 
 #define MOD (1000000007)
 
@@ -22,11 +22,19 @@ static inline int bruteforce(char* s,char* t){
     }
     return -1;
 }
+
 // 防止哈希冲突
 bool equals(char*s,int l1,int r1,int l2,int r2) {
     for (int i=l1,j=l2;i<=r1&&j<=r2;i++,j++) {
         if (s[i]!=s[j])
             return false;
+    }
+    return true;
+}
+
+bool equals2(char*s,int l1,int r1,char*t) {
+    for (int i=l1,j=0;i<=r1,j<strlen(t);i++,j++) {
+        if (s[i]!=t[j])return false;
     }
     return true;
 }
@@ -58,10 +66,83 @@ int longestDecomposition(char* text) {
     return ans;
 }
 
+int RabinKarp(char*s,char*t) {
+
+    if (strlen(s)<strlen(t))return -1;
+    if (strlen(t)==0)return 0;
+
+    long thash=0,B=256;
+    //先求出t的哈希值
+    for (int i=0;i<strlen(t);i++) {
+        thash=(thash*B+(unsigned char)t[i])%MOD;
+    }
+    //在s中寻找t
+    long powBase=1;
+    for (int i=0;i<strlen(t)-1;i++) {
+        powBase=powBase*B%MOD;
+    }
+
+    long hash = 0;
+
+    int i;
+    for (i = 0; i <strlen(t); i++) {
+        hash = (hash * B +(unsigned char)s[i])%MOD;
+    }
+    if (hash==thash&&equals2(s,0,strlen(t)-1,t)) {
+        return 0;
+    }
+    for (i =strlen(t); i < strlen(s); i++) {
+        hash = (hash - (unsigned char)s[i - strlen(t)] * powBase % MOD + MOD) % MOD;
+
+        hash = (hash * B + (unsigned char)s[i])%MOD;
+
+        if (hash==thash&&equals2(s,i - strlen(t)+1,i,t)) {
+            return i - strlen(t)+1;
+        }
+    }
+
+    return -1;
+}
 
 
-int main() {
-    char* s="hello,this is lidanininini";
-    char* t="ni";
-    printf("%d",bruteforce(s,t));
+int main()
+{
+    clock_t start, end;
+    double cost;
+
+    const int TEXT_LEN = 10000000;
+    char *s = (char*)malloc(TEXT_LEN + 1);
+    // 生成随机a-z
+    for(int i = 0; i < TEXT_LEN; i++)
+    {
+        s[i] = 'a' + rand() % 26;
+    }
+
+    char t[] = "abacabac";
+    int pos = 50000;
+    int m = strlen(t);
+    for(int i = 0; i < m; i++)
+    {
+        s[pos + i] = t[i];
+    }
+    s[TEXT_LEN] = '\0';
+
+    printf("==== 超长串测试 ====\n");
+    printf("文本长度：%d，模式串：%s，预期位置：%d\n", TEXT_LEN, t, pos);
+
+    start = clock();
+    int rk_res = RabinKarp(s, t);
+    end = clock();
+    cost = (double)(end - start) / CLOCKS_PER_SEC;
+    printf("RabinKarp 结果：%d，耗时：%.6f s\n", rk_res, cost);
+
+    start = clock();
+    int bf_res = bruteforce(s, t);
+    end = clock();
+    cost = (double)(end - start) / CLOCKS_PER_SEC;
+    printf("bruteforce 结果：%d，耗时：%.6f s\n", bf_res, cost);
+
+    free(s);
+
+    return 0;
 }
