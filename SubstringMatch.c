@@ -104,45 +104,91 @@ int RabinKarp(char*s,char*t) {
     return -1;
 }
 
-
-int main()
-{
-    clock_t start, end;
-    double cost;
-
-    const int TEXT_LEN = 10000000;
-    char *s = (char*)malloc(TEXT_LEN + 1);
-    // 生成随机a-z
-    for(int i = 0; i < TEXT_LEN; i++)
-    {
-        s[i] = 'a' + rand() % 26;
+//KMP
+static int* getLPS(char* t) {
+    int*lps=(int*)malloc(sizeof(int)*(strlen(t)));
+    lps[0] = 0;
+    for (int i=1;i<strlen(t);i++) {
+        //lps[i]
+        int a=lps[i-1];
+        while (a>0&&t[i]!=t[a])
+            a=lps[a-1];
+        if (t[i]==t[a])a++;
+        lps[i]=a;
     }
-
-    char t[] = "abacabac";
-    int pos = 50000;
-    int m = strlen(t);
-    for(int i = 0; i < m; i++)
-    {
-        s[pos + i] = t[i];
-    }
-    s[TEXT_LEN] = '\0';
-
-    printf("==== 超长串测试 ====\n");
-    printf("文本长度：%d，模式串：%s，预期位置：%d\n", TEXT_LEN, t, pos);
-
-    start = clock();
-    int rk_res = RabinKarp(s, t);
-    end = clock();
-    cost = (double)(end - start) / CLOCKS_PER_SEC;
-    printf("RabinKarp 结果：%d，耗时：%.6f s\n", rk_res, cost);
-
-    start = clock();
-    int bf_res = bruteforce(s, t);
-    end = clock();
-    cost = (double)(end - start) / CLOCKS_PER_SEC;
-    printf("bruteforce 结果：%d，耗时：%.6f s\n", bf_res, cost);
-
-    free(s);
-
-    return 0;
+    return lps;
 }
+
+static int kmp(char*s,char*t) {
+    int n = strlen(s);
+    int m = strlen(t);
+    if (n < m) return -1;
+    if (m == 0) return 0;
+
+    int* lps = getLPS(t);
+    int i = 0, j = 0;
+    while (i < n) {
+        if (s[i] == t[j]) {
+            i++;
+            j++;
+            if (j == m) {
+                free(lps);
+                return i - m;
+            }
+        } else if (j > 0) {
+            j = lps[j - 1];
+        } else {
+            i++;
+        }
+    }
+    free(lps);
+    return -1;
+}
+
+    int main()
+    {
+        clock_t start, end;
+        double cost;
+
+        const int TEXT_LEN = 10000000;
+        char *s = (char*)malloc(TEXT_LEN + 1);
+        // 生成随机a-z
+        for(int i = 0; i < TEXT_LEN; i++)
+        {
+            s[i] = 'a' + rand() % 26;
+        }
+
+        char t[] = "abacabac";
+        int pos = 50000;
+        int m = strlen(t);
+        for(int i = 0; i < m; i++)
+        {
+            s[pos + i] = t[i];
+        }
+        s[TEXT_LEN] = '\0';
+
+        printf("==== 超长串测试 ====\n");
+        printf("文本长度：%d，模式串：%s，预期位置：%d\n", TEXT_LEN, t, pos);
+
+        start = clock();
+        int rk_res = RabinKarp(s, t);
+        end = clock();
+        cost = (double)(end - start) / CLOCKS_PER_SEC;
+        printf("RabinKarp 结果：%d，耗时：%.6f s\n", rk_res, cost);
+
+        start = clock();
+        int bf_res = bruteforce(s, t);
+        end = clock();
+        cost = (double)(end - start) / CLOCKS_PER_SEC;
+        printf("bruteforce结果：%d，耗时：%.6f s\n", bf_res, cost);
+
+        // ========== KMP测试 ==========
+        start = clock();
+        int kmp_res = kmp(s, t);
+        end = clock();
+        cost = (double)(end - start) / CLOCKS_PER_SEC;
+        printf("KMP       结果：%d，耗时：%.6f s\n", kmp_res, cost);
+
+        free(s);
+        return 0;
+    }
