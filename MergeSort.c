@@ -1,11 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#define MIN(a,b) ((a)<(b)?(a):(b))
 
-void InsertionSort2(int*arr,int arrSize,int l,int r) {
+static void InsertionSort2(int *arr, const int l, const int r) {
     for (int i=l;i<=r;i++) {
         //将arr[i]放到合适位置
-        int temp=arr[i];
+        const int temp=arr[i];
         int j;
         for (j=i;j-1>=l&&arr[j-1]>temp;j--) {
             arr[j]=arr[j-1];
@@ -72,7 +73,7 @@ void MergeSort2(int*arr,int l,int r) {
 void MergeSort3(int*arr,int l,int r) {
 
     if (r-l<=15){
-        InsertionSort2(arr,r-l+1,l,r);
+        InsertionSort2(arr,l,r);
         return;
     }
 
@@ -134,13 +135,50 @@ void MergeSort4(int* arr, int* temp, int l, int r)
 // temp只在这里malloc一次
 void sort4(int* arr, int arrSize)
 {
-    int* temp = (int*)malloc(sizeof(int) * arrSize);
+    int* temp = malloc(sizeof(int) * arrSize);
     MergeSort4(arr, temp, 0, arrSize - 1);
     free(temp);
 }
 
+//自底向上的归并排序
+static void sortBU(int*arr, const int arrSize) {
+    int*temp=(int*)malloc(sizeof(int)*arrSize);
+    const int n=arrSize;
 
-int* generateRandomArray(int n,int bound) {
+    //遍历合并的区间长度
+    for (int sz=1;sz<n;sz+=sz) {
+        //遍历合并的两个区间的起始位置i
+        //合并[i,i+sz-1]和[i+sz,i+sz+sz-1]
+        for (int i=0;i+sz<n;i+=sz+sz) {
+            if (arr[i+sz-1]>arr[i+sz]) {
+                merge4(arr,temp,i,i+sz-1,MIN(i+sz+sz-1,n-1));
+            }
+        }
+    }
+}
+
+////自底向上的归并排序,插入排序优化
+static void sortBU2(int*arr, const int arrSize) {
+    int*temp=malloc(sizeof(int)*arrSize);
+    const int n=arrSize;
+
+    for (int i=0;i<arrSize;i+=16) {
+        InsertionSort2(arr,i,MIN(i+15, n-1));
+    }
+
+    //遍历合并的区间长度
+    for (int sz=16;sz<n;sz+=sz) {
+        //遍历合并的两个区间的起始位置i
+        //合并[i,i+sz-1]和[i+sz,i+sz+sz-1]
+        for (int i=0;i+sz<n;i+=sz+sz) {
+            if (arr[i+sz-1]>arr[i+sz]) {
+                merge4(arr,temp,i,i+sz-1,MIN(i+sz+sz-1,n-1));
+            }
+        }
+    }
+}
+
+static int* generateRandomArray(int n,int bound) {
     int*arr=(int*)malloc(sizeof(int)*n);
     srand((unsigned)time(NULL));
     for (int i=0;i<n;i++) {
@@ -172,18 +210,35 @@ int main(){
     sort4(arr4, n);
     clock_t end4 = clock();
 
+    int* arr5 = generateRandomArray(n, 100000);
+    clock_t start5 = clock();
+    sortBU(arr5, n);
+    clock_t end5 = clock();
+
+    int* arr6 = generateRandomArray(n, 100000);
+    clock_t start6 = clock();
+    sortBU2(arr6, n);
+    clock_t end6 = clock();
+
     double timeCost  = (double)(end1 - start1)/CLOCKS_PER_SEC;
     double timeCost2 = (double)(end2 - start2)/CLOCKS_PER_SEC;
     double timeCost3 = (double)(end3 - start3)/CLOCKS_PER_SEC;
     double timeCost4 = (double)(end4 - start4)/CLOCKS_PER_SEC;
+    double timeCost5 = (double)(end5 - start5)/CLOCKS_PER_SEC;
+    double timeCost6 = (double)(end6 - start6)/CLOCKS_PER_SEC;
+
 
     printf("MergeSort,  n=%d: %.6f s\n", n, timeCost);
     printf("MergeSort2, n=%d: %.6f s\n", n, timeCost2);
     printf("MergeSort3, n=%d: %.6f s\n", n, timeCost3);
     printf("MergeSort4, n=%d: %.6f s\n", n, timeCost4);
+    printf("MergeSortBU, n=%d: %.6f s\n", n, timeCost5);
+    printf("MergeSortBU2, n=%d: %.6f s\n", n, timeCost6);
 
     free(arr1);
     free(arr2);
     free(arr3);
-
+    free(arr4);
+    free(arr5);
+    free(arr6);
 }
