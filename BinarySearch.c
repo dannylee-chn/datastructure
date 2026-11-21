@@ -88,6 +88,31 @@ int lower(int*arr,int arrSize,int target) {
     }
     return l;
 }
+
+//lower_floor：存在返回小索引，不存在返回小于target的最大索引
+int lower_floor(int*arr,int arrSize,int target) {
+    int l=lower(arr,arrSize,target);
+    if (l+1<arrSize-1&&arr[l+1]==target) {
+        return l+1;
+    }
+    return l;
+}
+
+//upper_floor:<=target的最大索引
+int upper_floor(int*arr,int arrSize,int target) {
+    int l=-1,r=arrSize-1;
+    while (l<r) {
+        int mid=l+(r-l+1)/2;
+        if (arr[mid]<=target) {
+            l=mid;
+        }
+        else  {
+            r=mid-1;
+        }
+    }
+    return l;
+}
+
 int main(void)
 {
     int arr[] = {1,3,3,3,5,7,9};
